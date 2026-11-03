@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-forest-dark: #091913;
+    --color-forest-rich: #0E241B;
+    --color-forest: #143126;
+    --color-forest-emerald: #1A3E31;
+    --color-gold-pale: #F4E8D1;
+    --color-gold-champagne: #DFCEB2;
+    --color-gold-luminous: #D4AF37;
+    --color-gold: #C5A059;
+    --color-gold-antique: #B99560;
+    --color-gold-deep: #8E6D38;
+    --color-ivory: #F3EFE6;
+    --color-ivory-warm: #F7F4EC;
+    --color-cream: #FAF8F5;
+    --color-cream-pure: #FBFAF6;
+    --color-charcoal: #1D2320;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #1D2320;
+    background-color: #091913;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, .font-cinzel {
+    font-family: 'Cinzel', Georgia, serif;
+    letter-spacing: 0.05em;
+  }
+
+  .font-cormorant {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+/* Luminous Royal Metallic Gold Foil Typography */
+.gold-gradient-text,
+.gold-foil-text {
+  background: linear-gradient(135deg, #F4E8D1 0%, #D4AF37 35%, #C5A059 70%, #DFCEB2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle Champagne Gold Subtitle */
+.champagne-gradient-text {
+  background: linear-gradient(135deg, #FFFFFF 0%, #DFCEB2 60%, #C5A059 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Luxury Royal Gold Button (Rich tactile sheen, polished brass edge) */
+.btn-royal-gold {
+  background: linear-gradient(135deg, #F4E8D1 0%, #D4AF37 35%, #C5A059 75%, #B99560 100%);
+  color: #0E241B;
+  font-weight: 700;
+  border: 1px solid rgba(244, 232, 209, 0.6);
+  box-shadow: 0 4px 20px -2px rgba(197, 160, 89, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-royal-gold:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 6px 26px -2px rgba(197, 160, 89, 0.5);
+  transform: translateY(-1px);
+}
+.btn-royal-gold:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+/* Luxury Royal Outline Button */
+.btn-royal-outline {
+  background: rgba(14, 36, 27, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(197, 160, 89, 0.55);
+  color: #DFCEB2;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-royal-outline:hover {
+  background: rgba(197, 160, 89, 0.18);
+  border-color: #D4AF37;
+  color: #F4E8D1;
+  transform: translateY(-1px);
+}
+.btn-royal-outline:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+/* Luxury Royal Emerald Button */
+.btn-royal-emerald {
+  background: linear-gradient(135deg, #1A3E31 0%, #143126 50%, #0E241B 100%);
+  color: #F4E8D1;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  box-shadow: 0 4px 18px -2px rgba(14, 36, 27, 0.45);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-royal-emerald:hover {
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 6px 22px -2px rgba(197, 160, 89, 0.25);
+  transform: translateY(-1px);
+}
+.btn-royal-emerald:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+/* Custom fine luxury gold hairline borders and decorative accents */
+.gold-hairline {
+  border-color: rgba(197, 160, 89, 0.3);
+}
+
+.gold-badge {
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  background: rgba(197, 160, 89, 0.1);
+  color: #DFCEB2;
+}
+
+/* Palace Marble & Alabaster Surface Cards */
+.palace-card {
+  background: #FAF8F5;
+  border: 1px solid rgba(197, 160, 89, 0.25);
+  box-shadow: 0 10px 32px -8px rgba(14, 36, 27, 0.08);
+}
+.palace-card:hover {
+  border-color: rgba(197, 160, 89, 0.5);
+  box-shadow: 0 16px 40px -8px rgba(14, 36, 27, 0.14);
+}
+
+/* Palace Dark Velvet Emerald Cards */
+.palace-card-dark {
+  background: linear-gradient(160deg, #143126 0%, #0E241B 100%);
+  border: 1px solid rgba(197, 160, 89, 0.35);
+  box-shadow: 0 12px 36px -8px rgba(9, 25, 19, 0.6);
+}
+
+/* Jali Grid Lattice Texture */
+.jali-texture {
+  background-image: radial-gradient(circle at 14px 14px, rgba(197, 160, 89, 0.12) 1.5px, transparent 0);
+  background-size: 32px 32px;
+}
+
+/* Hide scrollbar for clean mobile horizontal scroll views */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Touch feedback utility */
+.active-press {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
+}
+.active-press:active {
+  transform: scale(0.975);
+}
+
+/* 3D Jharokha Cube Scene & Chamber Perspectives */
+.perspective-1200 {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+/* Gilded Golden Border Running Light Shimmer */
+@keyframes royalGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    border-color: rgba(197, 160, 89, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.45);
+    border-color: rgba(212, 175, 55, 0.7);
+  }
+}
+
+.royal-glow {
+  animation: royalGlow 4s ease-in-out infinite;
+}
+
+/* Shimmer metallic foil streak */
+@keyframes goldSheen {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.gold-sheen-sweep {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0) 0%,
+    rgba(244, 232, 209, 0.4) 50%,
+    rgba(212, 175, 55, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: goldSheen 3.5s infinite;
+}
