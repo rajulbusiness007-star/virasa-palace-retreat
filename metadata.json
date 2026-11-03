@@ -1,0 +1,6 @@
+{
+  "name": "VIRĀSĀ Palace & Retreat",
+  "description": "Luxury heritage hotel & destination wedding retreat in Rajasthan, India. A Royal Story. Yours to Live.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
