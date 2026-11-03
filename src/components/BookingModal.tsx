@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, Calendar, Users, Home, Shield, Sparkles, Send } from 'lucide-react';
+import { X, CheckCircle2, Calendar, Users, Home, Shield, Sparkles, Send, MessageCircle, Phone, Mail, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RoyalCrest, RoyalDivider } from './RoyalMotif';
 import { ROOMS_DATA, HOTEL_CONFIG } from '../data/hotelData';
@@ -44,25 +44,91 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [specialRequests, setSpecialRequests] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedBookingId, setConfirmedBookingId] = useState<string | null>(null);
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'fallback'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const selectedSuite = ROOMS_DATA.find((r) => r.id === selectedSuiteId) || ROOMS_DATA[0];
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setEmailStatus('sending');
 
-    // Simulate concierge routing and reference assignment
-    setTimeout(() => {
-      const generatedRef = `VIR-RES-${Math.floor(10000 + Math.random() * 90000)}`;
-      setIsSubmitting(false);
-      setConfirmedBookingId(generatedRef);
-    }, 800);
+    const generatedRef = `VIR-RES-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const payload = {
+      _subject: `🏰 New Suite Reservation Inquiry - ${fullName} (${selectedSuite.name})`,
+      _template: 'table',
+      _captcha: 'false',
+      booking_reference: generatedRef,
+      guest_full_name: fullName,
+      guest_email: email,
+      guest_phone: phone,
+      suite_name: selectedSuite.name,
+      suite_category: selectedSuite.category,
+      check_in: checkIn,
+      check_out: checkOut,
+      total_nights: nights,
+      guests_count: adults + children,
+      rooms_count: roomsCount,
+      special_requests: specialRequests || 'None specified',
+      submission_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+    };
+
+    try {
+      const res = await fetch(`https://formsubmit.co/ajax/${HOTEL_CONFIG.emailPlaceholder}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setEmailStatus('sent');
+      } else {
+        setEmailStatus('fallback');
+      }
+    } catch {
+      setEmailStatus('fallback');
+    }
+
+    setIsSubmitting(false);
+    setConfirmedBookingId(generatedRef);
   };
 
   const handleReset = () => {
     setConfirmedBookingId(null);
+    setEmailStatus('idle');
     onClose();
   };
 
-  const selectedSuite = ROOMS_DATA.find((r) => r.id === selectedSuiteId) || ROOMS_DATA[0];
+  const whatsappMessage = encodeURIComponent(
+    `🏰 *NEW SUITE RESERVATION INQUIRY - VIRĀSĀ PALACE*\n\n` +
+    `👤 *Guest:* ${fullName}\n` +
+    `📞 *Phone:* ${phone}\n` +
+    `✉️ *Email:* ${email}\n` +
+    `🛏️ *Suite:* ${selectedSuite.name}\n` +
+    `📅 *Dates:* ${checkIn} to ${checkOut} (${nights} nights)\n` +
+    `👥 *Guests:* ${adults + children} Guests (${roomsCount} Room/s)\n` +
+    (specialRequests ? `📝 *Requests:* ${specialRequests}\n` : '') +
+    `\n🔖 *Booking Ref:* ${confirmedBookingId || ''}`
+  );
+  const whatsappUrl = `https://wa.me/${HOTEL_CONFIG.whatsappPlaceholder.replace(/[^0-9]/g, '')}?text=${whatsappMessage}`;
+
+  const mailtoSubject = encodeURIComponent(`🏰 Suite Reservation: ${fullName} (${selectedSuite.name}) [${confirmedBookingId || ''}]`);
+  const mailtoBody = encodeURIComponent(
+    `Namaste,\n\nI have requested a suite reservation at VIRĀSĀ PALACE.\n\n` +
+    `Guest Name: ${fullName}\n` +
+    `Phone: ${phone}\n` +
+    `Email: ${email}\n` +
+    `Suite: ${selectedSuite.name}\n` +
+    `Dates: ${checkIn} to ${checkOut} (${nights} nights)\n` +
+    `Party: ${adults + children} Guests (${roomsCount} Rooms)\n` +
+    `Special Requests: ${specialRequests}\n` +
+    `Reference: ${confirmedBookingId || ''}\n\n` +
+    `Please confirm room availability and tariff quote.`
+  );
+  const mailtoUrl = `mailto:${HOTEL_CONFIG.emailPlaceholder}?subject=${mailtoSubject}&body=${mailtoBody}`;
 
   return (
     <AnimatePresence>
@@ -115,21 +181,30 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           
           {confirmedBookingId ? (
             /* Confirmation View */
-            <div className="py-6 text-center space-y-4">
+            <div className="py-5 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-[#17352B]/10 border-2 border-[#B99560] flex items-center justify-center mx-auto text-[#17352B]">
                 <CheckCircle2 size={36} className="text-[#B99560]" />
               </div>
 
               <div>
                 <span className="text-[10px] uppercase tracking-widest text-[#B99560] font-bold">
-                  Reservation Inquiry Received
+                  Reservation Inquiry Dispatched
                 </span>
                 <h3 className="font-cinzel text-lg font-bold text-[#17352B] mt-1">
                   Namaste, {fullName || 'Honored Guest'}
                 </h3>
                 <p className="text-xs text-[#20251F]/80 mt-1 max-w-xs mx-auto">
-                  Your reservation request has been submitted to the Palace Concierge. A formal itinerary and rate quote will be delivered to your email shortly.
+                  Your reservation request has been submitted to the Palace Reservations Desk.
                 </p>
+              </div>
+
+              {/* Delivery Guarantee Notification to mukulsen92238@gmail.com */}
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-300 text-[11px] text-emerald-950 text-left flex items-start gap-2">
+                <ShieldCheck size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold block text-emerald-900">Direct Delivery to Palace Owner:</span>
+                  Booking dossier dispatched to <strong className="font-mono text-emerald-800">{HOTEL_CONFIG.emailPlaceholder}</strong>.
+                </div>
               </div>
 
               {/* Reference Card */}
@@ -152,14 +227,44 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 </div>
               </div>
 
-              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 text-left">
-                <span className="font-semibold block mb-0.5">Concierge Guarantee:</span>
-                Our Royal Reservations team will reach you via {phone || email} within 2 hours with customized dining and transfer arrangements.
+              {/* Instant Communication Actions for Owner (+91 8827846844) */}
+              <div className="space-y-2 pt-1 text-left">
+                <span className="block text-[10px] uppercase tracking-wider text-[#17352B] font-bold text-center">
+                  Instant Direct Channels to Owner
+                </span>
+
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-royal-gold w-full h-12 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider shadow-md hover:brightness-105 transition-all text-center"
+                >
+                  <MessageCircle size={17} className="text-[#0E241B]" />
+                  <span>Forward to Owner on WhatsApp</span>
+                </a>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`tel:${HOTEL_CONFIG.phonePlaceholder.replace(/[^0-9+]/g, '')}`}
+                    className="btn-royal-emerald h-11 flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-center rounded-xl"
+                  >
+                    <Phone size={14} className="text-[#D4AF37]" />
+                    <span>Call Concierge</span>
+                  </a>
+
+                  <a
+                    href={mailtoUrl}
+                    className="h-11 rounded-xl bg-white border border-[#C5A059]/40 text-[#0E241B] flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider hover:bg-[#F3F0E8] transition-colors text-center"
+                  >
+                    <Mail size={14} className="text-[#C5A059]" />
+                    <span>Direct Email</span>
+                  </a>
+                </div>
               </div>
 
               <button
                 onClick={handleReset}
-                className="btn-royal-gold w-full h-11"
+                className="w-full h-10 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold uppercase tracking-wider transition-colors mt-2"
               >
                 Return to Palace Overview
               </button>

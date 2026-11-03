@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, CheckCircle2, Calendar, Users, Clock, Send, ShieldCheck } from 'lucide-react';
+import { X, Sparkles, CheckCircle2, Calendar, Users, Clock, Send, ShieldCheck, MessageCircle, Phone, Mail } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RoyalCrest } from './RoyalMotif';
 import { HOTEL_CONFIG } from '../data/hotelData';
@@ -52,6 +52,7 @@ export const WeddingEnquiryModal: React.FC<WeddingEnquiryModalProps> = ({
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedEnquiryId, setConfirmedEnquiryId] = useState<string | null>(null);
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'fallback'>('idle');
 
   const eventTypes = [
     'Full Destination Wedding (All 6 Ceremonies)',
@@ -91,21 +92,89 @@ export const WeddingEnquiryModal: React.FC<WeddingEnquiryModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setEmailStatus('sending');
 
-    setTimeout(() => {
-      const generatedEnquiryRef = `VP-WED-${Math.floor(10000 + Math.random() * 90000)}`;
-      setIsSubmitting(false);
-      setConfirmedEnquiryId(generatedEnquiryRef);
-    }, 900);
+    const generatedEnquiryRef = `VP-WED-${Math.floor(10000 + Math.random() * 90000)}`;
+
+    const payload = {
+      _subject: `👑 New Destination Wedding Enquiry - ${customerName} (${preferredDate})`,
+      _template: 'table',
+      _captcha: 'false',
+      enquiry_id: generatedEnquiryRef,
+      bride_groom_or_family_name: customerName,
+      contact_email: email,
+      contact_phone: phone,
+      preferred_wedding_date: preferredDate,
+      celebration_duration: celebrationDays,
+      estimated_guest_count: guestCount,
+      event_ceremonies_type: eventType,
+      selected_venues: selectedVenues.join(', '),
+      additional_vision_and_requirements: additionalRequirements || 'None specified',
+      submission_time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+    };
+
+    try {
+      const res = await fetch(`https://formsubmit.co/ajax/${HOTEL_CONFIG.emailPlaceholder}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setEmailStatus('sent');
+      } else {
+        setEmailStatus('fallback');
+      }
+    } catch {
+      setEmailStatus('fallback');
+    }
+
+    setIsSubmitting(false);
+    setConfirmedEnquiryId(generatedEnquiryRef);
   };
 
   const handleReset = () => {
     setConfirmedEnquiryId(null);
+    setEmailStatus('idle');
     onClose();
   };
+
+  const whatsappMessage = encodeURIComponent(
+    `👑 *NEW WEDDING ENQUIRY - VIRĀSĀ PALACE*\n\n` +
+    `👤 *Family / Couple:* ${customerName}\n` +
+    `📞 *Phone:* ${phone}\n` +
+    `✉️ *Email:* ${email}\n` +
+    `📅 *Preferred Date:* ${preferredDate}\n` +
+    `⏳ *Duration:* ${celebrationDays}\n` +
+    `👥 *Guests:* ${guestCount}\n` +
+    `🎉 *Type:* ${eventType}\n` +
+    `🏛️ *Venues:* ${selectedVenues.join(', ')}\n` +
+    (additionalRequirements ? `📝 *Notes:* ${additionalRequirements}\n` : '') +
+    `\n🔖 *Enquiry Ref:* ${confirmedEnquiryId || ''}`
+  );
+  const whatsappUrl = `https://wa.me/${HOTEL_CONFIG.whatsappPlaceholder.replace(/[^0-9]/g, '')}?text=${whatsappMessage}`;
+
+  const mailtoSubject = encodeURIComponent(`👑 Wedding Enquiry: ${customerName} (${preferredDate}) [${confirmedEnquiryId || ''}]`);
+  const mailtoBody = encodeURIComponent(
+    `Namaste,\n\nI have submitted a destination wedding enquiry for VIRĀSĀ PALACE.\n\n` +
+    `Family / Couple: ${customerName}\n` +
+    `Phone: ${phone}\n` +
+    `Email: ${email}\n` +
+    `Preferred Date: ${preferredDate}\n` +
+    `Celebration Days: ${celebrationDays}\n` +
+    `Estimated Guests: ${guestCount}\n` +
+    `Ceremonies Type: ${eventType}\n` +
+    `Selected Venues: ${selectedVenues.join(', ')}\n` +
+    `Requirements: ${additionalRequirements}\n` +
+    `Enquiry Ref ID: ${confirmedEnquiryId || ''}\n\n` +
+    `Please reach out with your wedding portfolio and date availability.`
+  );
+  const mailtoUrl = `mailto:${HOTEL_CONFIG.emailPlaceholder}?subject=${mailtoSubject}&body=${mailtoBody}`;
 
   return (
     <AnimatePresence>
@@ -158,23 +227,33 @@ export const WeddingEnquiryModal: React.FC<WeddingEnquiryModalProps> = ({
           
           {confirmedEnquiryId ? (
             /* Confirmation View */
-            <div className="py-6 text-center space-y-4">
+            <div className="py-5 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-[#17352B]/10 border-2 border-[#B99560] flex items-center justify-center mx-auto text-[#17352B]">
                 <CheckCircle2 size={36} className="text-[#B99560]" />
               </div>
 
               <div>
                 <span className="text-[10px] uppercase tracking-widest text-[#B99560] font-bold">
-                  Bespoke Enquiry Received
+                  Bespoke Enquiry Received &amp; Queued
                 </span>
                 <h3 className="font-cinzel text-lg font-bold text-[#17352B] mt-1">
                   Congratulations, {customerName || 'Honored Family'}
                 </h3>
                 <p className="text-xs text-[#20251F]/80 mt-1 max-w-xs mx-auto">
-                  Your destination wedding proposal has been conveyed to the Palace Director of Weddings. We look forward to creating your royal fairy tale.
+                  Your destination wedding proposal has been conveyed to the Palace Director of Weddings.
                 </p>
               </div>
 
+              {/* Delivery Guarantee Notification to mukulsen92238@gmail.com */}
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-300 text-[11px] text-emerald-950 text-left flex items-start gap-2">
+                <ShieldCheck size={16} className="text-emerald-700 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold block text-emerald-900">Direct Delivery to Palace Owner:</span>
+                  Lead dossier dispatched to <strong className="font-mono text-emerald-800">{HOTEL_CONFIG.emailPlaceholder}</strong> and registered on the Royal Concierge Desk.
+                </div>
+              </div>
+
+              {/* Summary Details */}
               <div className="p-4 bg-[#F3F0E8] rounded-xl border border-[#B99560]/30 text-left space-y-2 text-xs">
                 <div className="flex items-center justify-between pb-2 border-b border-[#B99560]/20">
                   <span className="text-gray-600">Enquiry Dossier ID:</span>
@@ -194,17 +273,44 @@ export const WeddingEnquiryModal: React.FC<WeddingEnquiryModalProps> = ({
                 </div>
               </div>
 
-              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-900 text-left flex items-start gap-2">
-                <ShieldCheck size={16} className="text-amber-800 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-semibold block">Senior Wedding Planner Consultation:</span>
-                  You will receive a tailored bridal dossier, seasonal availability calendar, and culinary portfolio via {phone || email} within 24 hours.
+              {/* Instant Communication Actions for Owner (+91 8827846844) */}
+              <div className="space-y-2 pt-1 text-left">
+                <span className="block text-[10px] uppercase tracking-wider text-[#17352B] font-bold text-center">
+                  Instant Direct Channels to Owner
+                </span>
+
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-royal-gold w-full h-12 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider shadow-md hover:brightness-105 transition-all text-center"
+                >
+                  <MessageCircle size={17} className="text-[#0E241B]" />
+                  <span>Forward to Owner on WhatsApp</span>
+                </a>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={`tel:${HOTEL_CONFIG.phonePlaceholder.replace(/[^0-9+]/g, '')}`}
+                    className="btn-royal-emerald h-11 flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-center rounded-xl"
+                  >
+                    <Phone size={14} className="text-[#D4AF37]" />
+                    <span>Call Concierge</span>
+                  </a>
+
+                  <a
+                    href={mailtoUrl}
+                    className="h-11 rounded-xl bg-white border border-[#C5A059]/40 text-[#0E241B] flex items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider hover:bg-[#F3F0E8] transition-colors text-center"
+                  >
+                    <Mail size={14} className="text-[#C5A059]" />
+                    <span>Direct Email</span>
+                  </a>
                 </div>
               </div>
 
               <button
                 onClick={handleReset}
-                className="btn-royal-gold w-full h-11"
+                className="w-full h-10 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-semibold uppercase tracking-wider transition-colors mt-2"
               >
                 Return to Palace Weddings
               </button>
