@@ -91,6 +91,30 @@ export const InteractiveGuestBook: React.FC = () => {
   });
   const [hasLiked, setHasLiked] = useState<Record<string, boolean>>({});
   const [submittedBanner, setSubmittedBanner] = useState(false);
+  const [reactionsState, setReactionsState] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem('virasa_guest_reactions');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {};
+  });
+  const [userReactions, setUserReactions] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('virasa_guest_reactions', JSON.stringify(reactionsState));
+    } catch {}
+  }, [reactionsState]);
+
+  const handleAddReaction = (blessingId: string, reactionKey: string) => {
+    const key = `${blessingId}_${reactionKey}`;
+    if (userReactions[key]) return;
+    setReactionsState(prev => ({
+      ...prev,
+      [key]: (prev[key] || 0) + 1
+    }));
+    setUserReactions(prev => ({ ...prev, [key]: true }));
+  };
 
   useEffect(() => {
     try {
@@ -234,30 +258,50 @@ export const InteractiveGuestBook: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Footer Signee Info & Like Reaction */}
-                <div className="mt-4 pt-3 border-t border-[#C5A059]/15 flex items-center justify-between">
-                  <div>
-                    <h4 className="font-cinzel text-xs font-bold text-[#0E241B]">
-                      {blessing.name}
-                    </h4>
-                    <span className="block text-[10px] text-gray-500">
-                      {blessing.city} · {blessing.occasion}
-                    </span>
+                {/* Footer Signee Info & Lovable Reaction Pills */}
+                <div className="mt-4 pt-3 border-t border-[#C5A059]/15">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h4 className="font-cinzel text-xs font-bold text-[#0E241B]">
+                        {blessing.name}
+                      </h4>
+                      <span className="block text-[10px] text-gray-500">
+                        {blessing.city} · {blessing.occasion}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Like Button */}
-                  <button
-                    onClick={() => handleLike(blessing.id)}
-                    className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-all ${
-                      liked
-                        ? 'bg-rose-50 text-rose-600 border-rose-300 font-semibold'
-                        : 'bg-white text-gray-500 border-gray-200 hover:border-[#C5A059]'
-                    }`}
-                    aria-label="Send blessing appreciation"
-                  >
-                    <Heart size={12} className={liked ? 'fill-rose-500 text-rose-500' : ''} />
-                    <span>{blessing.likes}</span>
-                  </button>
+                  {/* Adorable Reaction Pills */}
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    {[
+                      { key: 'love', emoji: '💖', label: 'Love' },
+                      { key: 'regal', emoji: '👑', label: 'Regal' },
+                      { key: 'magical', emoji: '✨', label: 'Magical' },
+                      { key: 'serene', emoji: '🪷', label: 'Serene' }
+                    ].map((rx) => {
+                      const reactionKey = `${blessing.id}_${rx.key}`;
+                      const count = (reactionsState[reactionKey] || 0) + (rx.key === 'love' ? blessing.likes : 0);
+                      const isSelected = !!userReactions[reactionKey];
+
+                      return (
+                        <motion.button
+                          key={rx.key}
+                          whileTap={{ scale: 1.25 }}
+                          whileHover={{ scale: 1.06 }}
+                          onClick={() => handleAddReaction(blessing.id, rx.key)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium transition-all ${
+                            isSelected
+                              ? 'bg-[#C5A059]/25 text-[#0E241B] border border-[#C5A059] font-bold shadow-sm'
+                              : 'bg-[#F3EFE6] text-[#20251F]/75 border border-[#C5A059]/20 hover:border-[#C5A059]/50'
+                          }`}
+                          title={`Send ${rx.label} reaction`}
+                        >
+                          <span className="text-xs">{rx.emoji}</span>
+                          {count > 0 && <span className="text-[10px] font-semibold">{count}</span>}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
                 </div>
               </motion.article>
             );
@@ -328,6 +372,25 @@ export const InteractiveGuestBook: React.FC = () => {
                         </div>
                       </button>
                     ))}
+                  </div>
+
+                  {/* Lovable Animated Wax Stamp Preview */}
+                  <div className="mt-2.5 p-3 rounded-2xl bg-[#091913]/70 border border-[#C5A059]/35 flex items-center gap-3">
+                    <div 
+                      key={formData.seal} 
+                      className="w-11 h-11 rounded-full wax-seal-badge animate-wax-press flex items-center justify-center text-xl shrink-0 cursor-pointer shadow-lg"
+                      title="Imperial Wax Seal Stamp"
+                    >
+                      {SEALS.find(s => s.id === formData.seal)?.emblem || '🪷'}
+                    </div>
+                    <div className="text-left">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#D4AF37] block">
+                        Royal Wax Seal: {SEALS.find(s => s.id === formData.seal)?.label}
+                      </span>
+                      <span className="text-[11px] text-[#DFCEB2] font-cormorant italic">
+                        "{SEALS.find(s => s.id === formData.seal)?.meaning}"
+                      </span>
+                    </div>
                   </div>
                 </div>
 

@@ -162,6 +162,25 @@ export const Hero: React.FC<HeroProps> = ({
         className="relative z-10 px-5 md:px-12 pt-24 md:pt-36 pb-12 md:pb-16 flex flex-col items-center text-center max-w-4xl mx-auto"
       >
         
+        {/* Adorable Royal Welcome & Concierge Live Badge */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.92, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-3 animate-float-gentle"
+        >
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0E241B]/85 hover:bg-[#1A3E31]/90 border border-[#C5A059]/50 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-all hover:scale-105 cursor-default">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-[11px] md:text-xs font-medium tracking-wide text-[#DFCEB2]">
+              🏰 Welcome to the Kingdom · Live Concierge Online
+            </span>
+            <span className="text-xs">✨</span>
+          </div>
+        </motion.div>
+
         {/* Brand Royal Monogram & Editorial Coordinates */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

@@ -154,6 +154,27 @@ export const LuxuryBentoGrid: React.FC<LuxuryBentoGridProps> = ({
             <p className="text-xs md:text-base text-[#FAF8F5]/80 max-w-2xl mx-auto leading-relaxed font-light">
               An interactive constellation of bespoke palace privileges, transcendent culinary theatre, and ceremonial spectacles crafted for our most discerning patrons.
             </p>
+
+            {/* Adorable Floating Privilege Pills */}
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {[
+                { emoji: '🪷', label: 'Lotus Scented' },
+                { emoji: '👑', label: '24/7 Sovereign Butler' },
+                { emoji: '✨', label: 'Starlight Dining' },
+                { emoji: '🎺', label: 'Trumpet Fanfares' },
+                { emoji: '🕊️', label: 'Royal Exclusivity' }
+              ].map((pill) => (
+                <motion.span
+                  key={pill.label}
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0E241B]/90 border border-[#C5A059]/40 text-[#DFCEB2] text-[11px] font-medium shadow-sm hover:border-[#D4AF37] hover:text-[#F4E8D1] transition-all cursor-default"
+                >
+                  <span>{pill.emoji}</span>
+                  <span>{pill.label}</span>
+                </motion.span>
+              ))}
+            </div>
           </div>
         </MotionFadeIn>
 
