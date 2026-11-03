@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, CheckCircle, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 import { RoyalCrest, RoyalDivider } from './RoyalMotif';
 import { MotionFadeIn } from './MotionFadeIn';
+import { HOTEL_CONFIG } from '../data/hotelData';
 
 export const NewsletterSignup: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ export const NewsletterSignup: React.FC = () => {
     { id: 'culinary', label: 'Royal Khansama Dining' },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@') || !email.includes('.')) {
       setStatus('error');
@@ -27,10 +28,26 @@ export const NewsletterSignup: React.FC = () => {
     setStatus('loading');
     setErrorMessage('');
 
-    // Simulate luxury dispatch registration
-    setTimeout(() => {
-      setStatus('success');
-    }, 700);
+    try {
+      await fetch(`https://formsubmit.co/ajax/${HOTEL_CONFIG.emailPlaceholder}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          _subject: `📰 New Gazette Subscriber: ${email}`,
+          _template: 'table',
+          subscriber_email: email,
+          patronage_area: selectedInterest,
+          subscribed_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+        })
+      });
+    } catch {
+      // offline fallback
+    }
+
+    setStatus('success');
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Sparkles, Phone, MessageCircle, Mail, X } from 'lucide-react';
+import { Calendar, Sparkles, Phone, MessageCircle, Mail, X, CheckCircle2 } from 'lucide-react';
 import { HOTEL_CONFIG } from '../data/hotelData';
 
 interface StickyBottomBarProps {
@@ -12,6 +12,40 @@ export const StickyBottomBar: React.FC<StickyBottomBarProps> = ({
   onOpenWeddingEnquiry
 }) => {
   const [showQuickContact, setShowQuickContact] = useState(false);
+  const [callbackPhone, setCallbackPhone] = useState('');
+  const [callbackSent, setCallbackSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleQuickCallback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callbackPhone) return;
+
+    setIsSubmitting(true);
+    const payload = {
+      _subject: `🚨 Mobile Bar Callback Request: ${callbackPhone}`,
+      _template: 'table',
+      _captcha: 'false',
+      phone_number: callbackPhone,
+      request_source: 'Mobile Sticky Bottom Bar',
+      timestamp: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+    };
+
+    try {
+      await fetch(`https://formsubmit.co/ajax/${HOTEL_CONFIG.emailPlaceholder}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch {
+      // offline fallback
+    }
+
+    setIsSubmitting(false);
+    setCallbackSent(true);
+  };
+
+  const whatsappQuickMessage = encodeURIComponent('Namaste! I am on the VIRĀSĀ Palace website and would like to speak with the Owner/Concierge regarding booking & wedding details.');
+  const whatsappUrl = `https://wa.me/${HOTEL_CONFIG.whatsappPlaceholder.replace(/[^0-9]/g, '')}?text=${whatsappQuickMessage}`;
 
   return (
     <>
@@ -51,7 +85,7 @@ export const StickyBottomBar: React.FC<StickyBottomBarProps> = ({
               </a>
 
               <a
-                href={`https://wa.me/${HOTEL_CONFIG.whatsappPlaceholder.replace(/[^0-9]/g, '')}?text=Namaste,%20I%20would%20like%20to%20enquire%20about%20VIRĀSĀ%20Palace%20and%20Retreat.`}
+                href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 rounded-xl bg-[#122820] border border-[#B99560]/30 hover:bg-[#B99560]/20 transition-colors"
@@ -60,23 +94,51 @@ export const StickyBottomBar: React.FC<StickyBottomBarProps> = ({
                   <MessageCircle size={15} />
                 </div>
                 <div>
-                  <span className="font-semibold text-white block">WhatsApp Wedding Desk</span>
+                  <span className="font-semibold text-white block">WhatsApp Palace Owner Desk</span>
                   <span className="text-[10px] text-gray-300 font-mono">{HOTEL_CONFIG.whatsappPlaceholder}</span>
                 </div>
               </a>
 
               <a
-                href={`mailto:${HOTEL_CONFIG.emailPlaceholder}`}
+                href={`mailto:${HOTEL_CONFIG.emailPlaceholder}?subject=${encodeURIComponent('Inquiry from VIRĀSĀ Palace Website')}`}
                 className="flex items-center gap-3 p-3 rounded-xl bg-[#122820] border border-[#B99560]/30 hover:bg-[#B99560]/20 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-[#B99560]/20 flex items-center justify-center text-[#B99560]">
                   <Mail size={15} />
                 </div>
                 <div>
-                  <span className="font-semibold text-white block">Email Concierge</span>
+                  <span className="font-semibold text-white block">Email Owner / Concierge</span>
                   <span className="text-[10px] text-gray-300 font-mono">{HOTEL_CONFIG.emailPlaceholder}</span>
                 </div>
               </a>
+
+              {/* Instant Callback Form inside Mobile Drawer */}
+              <div className="mt-3 pt-3 border-t border-[#B99560]/20">
+                {callbackSent ? (
+                  <div className="p-2.5 bg-[#122820] rounded-xl border border-emerald-400/40 text-[11px] text-emerald-300 flex items-center gap-2">
+                    <CheckCircle2 size={16} />
+                    <span>Callback request sent to Owner Desk!</span>
+                  </div>
+                ) : (
+                  <form onSubmit={handleQuickCallback} className="flex gap-1.5">
+                    <input
+                      type="tel"
+                      required
+                      value={callbackPhone}
+                      onChange={(e) => setCallbackPhone(e.target.value)}
+                      placeholder="Enter mobile for instant callback..."
+                      className="flex-1 h-9 px-2.5 rounded-lg bg-[#0E241B] border border-[#B99560]/40 text-xs text-white placeholder:text-gray-400 focus:outline-none focus:border-[#B99560]"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="btn-royal-gold px-3 h-9 rounded-lg text-[10px] font-bold uppercase tracking-wider whitespace-nowrap"
+                    >
+                      {isSubmitting ? 'Sending...' : 'Request Call'}
+                    </button>
+                  </form>
+                )}
+              </div>
             </div>
           </div>
         </div>

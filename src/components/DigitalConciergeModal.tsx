@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  MessageSquare, X, Send, Sparkles, Phone, Clock, 
+  MessageSquare, MessageCircle, X, Send, Sparkles, Phone, Clock, 
   Check, User, BellRing, Compass, Utensils, Coffee, ShieldCheck, RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -225,6 +225,16 @@ export const DigitalConciergeModal: React.FC<DigitalConciergeModalProps> = ({
                     <RotateCcw size={13} />
                   </button>
                   <a
+                    href={`https://wa.me/${HOTEL_CONFIG.whatsappPlaceholder.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Namaste Padmanabh / Palace Desk, I would like assistance regarding my stay/event at Virasa Palace.')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-8 h-8 rounded-full bg-white/10 hover:bg-emerald-600 hover:text-white flex items-center justify-center text-[#DFCEB2] transition-colors"
+                    title="Chat Directly on WhatsApp with Concierge Desk"
+                    aria-label="Chat on WhatsApp"
+                  >
+                    <MessageCircle size={14} />
+                  </a>
+                  <a
                     href={`tel:${HOTEL_CONFIG.phonePlaceholder.replace(/[^0-9+]/g, '')}`}
                     className="w-8 h-8 rounded-full bg-white/10 hover:bg-[#B99560] hover:text-[#17352B] flex items-center justify-center text-[#DFCEB2] transition-colors"
                     title="Direct Phone Line"
@@ -267,7 +277,7 @@ export const DigitalConciergeModal: React.FC<DigitalConciergeModalProps> = ({
                       <p className="text-[12px]">{msg.text}</p>
 
                       {msg.isServiceRequest && msg.requestRef && (
-                        <div className="mt-2.5 p-2 bg-[#F3F0E8] rounded-lg border border-[#B99560]/30 text-[11px] space-y-1">
+                        <div className="mt-2.5 p-2 bg-[#F3F0E8] rounded-lg border border-[#B99560]/30 text-[11px] space-y-1.5">
                           <div className="flex items-center justify-between font-mono text-[#17352B] font-bold">
                             <span>Ticket Reference:</span>
                             <span className="text-[#B99560]">{msg.requestRef}</span>
@@ -276,6 +286,15 @@ export const DigitalConciergeModal: React.FC<DigitalConciergeModalProps> = ({
                             <Check size={12} />
                             <span>Dispatched to Floor Butler (Chamber Service)</span>
                           </div>
+                          <a
+                            href={`https://wa.me/${HOTEL_CONFIG.whatsappPlaceholder.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Namaste, following up on Service Ticket #${msg.requestRef} at Virasa Palace: ${msg.text}`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 w-full py-1.5 px-2 rounded-lg bg-emerald-700 text-white font-medium text-[10px] flex items-center justify-center gap-1 hover:bg-emerald-800 transition-colors"
+                          >
+                            <MessageCircle size={12} />
+                            <span>Ping Concierge on WhatsApp</span>
+                          </a>
                         </div>
                       )}
 

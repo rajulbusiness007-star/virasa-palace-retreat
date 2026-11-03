@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, MessageCircle, Clock, ExternalLink, ShieldCheck, FileText, ChevronRight, X } from 'lucide-react';
+import { MapPin, Phone, Mail, MessageCircle, Clock, ExternalLink, ShieldCheck, FileText, ChevronRight, X, Send, CheckCircle2, Sparkles } from 'lucide-react';
 import { HOTEL_CONFIG } from '../data/hotelData';
 import { RoyalCrest, RoyalDivider } from './RoyalMotif';
 import { MotionFadeIn } from './MotionFadeIn';
@@ -15,6 +15,56 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
 }) => {
   const [showLegalModal, setShowLegalModal] = useState<'privacy' | 'terms' | null>(null);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
+
+  // Instant Callback Request State
+  const [callbackName, setCallbackName] = useState('');
+  const [callbackPhone, setCallbackPhone] = useState('');
+  const [callbackTimePref, setCallbackTimePref] = useState('Immediately (Within 15 mins)');
+  const [isSubmittingCallback, setIsSubmittingCallback] = useState(false);
+  const [callbackSent, setCallbackSent] = useState(false);
+
+  const handleCallbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!callbackPhone) return;
+
+    setIsSubmittingCallback(true);
+
+    const payload = {
+      _subject: `🚨 Urgent Callback Requested: ${callbackName || 'Guest'} (${callbackPhone})`,
+      _template: 'table',
+      _captcha: 'false',
+      guest_name: callbackName || 'Not specified',
+      callback_phone: callbackPhone,
+      preferred_time: callbackTimePref,
+      requested_at: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      estate_destination: HOTEL_CONFIG.name
+    };
+
+    try {
+      await fetch(`https://formsubmit.co/ajax/${HOTEL_CONFIG.emailPlaceholder}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+    } catch {
+      // offline fallback
+    }
+
+    setIsSubmittingCallback(false);
+    setCallbackSent(true);
+  };
+
+  const callbackWhatsappMessage = encodeURIComponent(
+    `🚨 *URGENT CALLBACK REQUEST - VIRĀSĀ PALACE*\n\n` +
+    `👤 *Guest Name:* ${callbackName || 'Interested Client'}\n` +
+    `📞 *Phone for Callback:* ${callbackPhone}\n` +
+    `⏰ *Preferred Time:* ${callbackTimePref}\n\n` +
+    `Please call me back regarding palace booking / destination wedding enquiry.`
+  );
+  const callbackWhatsappUrl = `https://wa.me/${HOTEL_CONFIG.whatsappPlaceholder.replace(/[^0-9]/g, '')}?text=${callbackWhatsappMessage}`;
 
   return (
     <footer id="contact" className="bg-[#091913] text-[#FBFAF6] pt-12 md:pt-20 pb-24 md:pb-16 border-t border-[#C5A059]/30 relative overflow-hidden">
@@ -140,21 +190,101 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
             </MotionFadeIn>
           </div>
 
-          {/* Column 3: Integrations & Quick Links */}
+          {/* Column 3: Instant Callback Request & Integrations */}
           <div className="md:col-span-3 space-y-4">
+            
+            {/* Immediate Callback Request Card */}
             <MotionFadeIn yOffset={14} delay={0.2}>
-              <div className="p-4 bg-[#17352B]/70 rounded-2xl border border-[#B99560]/25 space-y-3">
+              <div className="palace-card-dark rounded-2xl p-4 md:p-5 border border-[#C5A059]/40 space-y-3 shadow-xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-[#C5A059]/20 border border-[#C5A059]/50 flex items-center justify-center text-[#D4AF37]">
+                    <Phone size={15} />
+                  </div>
+                  <div>
+                    <span className="font-cinzel text-xs font-bold text-white block">
+                      Request Call from Owner
+                    </span>
+                    <span className="text-[10px] text-[#D4AF37] block">
+                      Direct Concierge Call-Back
+                    </span>
+                  </div>
+                </div>
+
+                {callbackSent ? (
+                  <div className="p-3 bg-[#143126] rounded-xl border border-emerald-400/40 text-xs text-[#FBFAF6] space-y-2.5 animate-in fade-in">
+                    <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px]">
+                      <CheckCircle2 size={15} />
+                      <span>Request Delivered to Owner!</span>
+                    </div>
+                    <p className="text-[10px] text-gray-300 leading-tight">
+                      Alert dispatched to <strong className="font-mono text-[#D4AF37]">{HOTEL_CONFIG.emailPlaceholder}</strong>.
+                    </p>
+                    <a
+                      href={callbackWhatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-royal-gold w-full h-9 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                    >
+                      <MessageCircle size={13} className="text-[#0E241B]" />
+                      <span>Ping on WhatsApp</span>
+                    </a>
+                  </div>
+                ) : (
+                  <form onSubmit={handleCallbackSubmit} className="space-y-2 text-xs">
+                    <div>
+                      <input
+                        type="text"
+                        value={callbackName}
+                        onChange={(e) => setCallbackName(e.target.value)}
+                        placeholder="Your Name (Optional)"
+                        className="w-full h-8 px-2.5 bg-[#091913] rounded-lg border border-[#C5A059]/30 text-white placeholder:text-gray-500 text-[11px] focus:outline-none focus:border-[#D4AF37]"
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="tel"
+                        required
+                        value={callbackPhone}
+                        onChange={(e) => setCallbackPhone(e.target.value)}
+                        placeholder="Your Phone / WhatsApp *"
+                        className="w-full h-8 px-2.5 bg-[#091913] rounded-lg border border-[#C5A059]/30 text-white placeholder:text-gray-500 text-[11px] focus:outline-none focus:border-[#D4AF37]"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingCallback}
+                      className="btn-royal-gold w-full h-9 rounded-lg font-cinzel text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      {isSubmittingCallback ? (
+                        <span>Transmitting...</span>
+                      ) : (
+                        <>
+                          <Phone size={12} className="text-[#0E241B]" />
+                          <span>Request Immediate Call</span>
+                        </>
+                      )}
+                    </button>
+                    <span className="block text-[9px] text-center text-gray-400">
+                      Owner desk receives notification instantly
+                    </span>
+                  </form>
+                )}
+              </div>
+            </MotionFadeIn>
+
+            <MotionFadeIn yOffset={14} delay={0.25}>
+              <div className="p-3.5 bg-[#17352B]/70 rounded-2xl border border-[#B99560]/25 space-y-2">
                 <div>
                   <span className="font-cinzel text-xs font-bold text-[#DFCEB2] block">
                     Property Configuration
                   </span>
-                  <span className="text-[11px] text-gray-400 block mt-1">
+                  <span className="text-[10px] text-gray-400 block mt-0.5">
                     Sabre SynXis, Opera Cloud &amp; CRM Webhook Endpoints
                   </span>
                 </div>
                 <button
                   onClick={onOpenConfigGuide}
-                  className="w-full py-2 rounded-xl bg-[#B99560]/20 text-[#DFCEB2] hover:bg-[#B99560] hover:text-[#17352B] transition-colors text-xs font-semibold text-center border border-[#B99560]/40"
+                  className="w-full py-1.5 rounded-xl bg-[#B99560]/20 text-[#DFCEB2] hover:bg-[#B99560] hover:text-[#17352B] transition-colors text-xs font-semibold text-center border border-[#B99560]/40"
                 >
                   Developer &amp; PMS Guide
                 </button>
@@ -162,10 +292,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({
             </MotionFadeIn>
 
             {/* Quick Palace Protocols */}
-            <div className="p-4 bg-[#17352B]/40 rounded-2xl border border-[#B99560]/15 space-y-2 text-xs text-[#DFCEB2]/80">
+            <div className="p-3.5 bg-[#17352B]/40 rounded-2xl border border-[#B99560]/15 space-y-1.5 text-xs text-[#DFCEB2]/80">
               <span className="font-cinzel text-xs font-semibold text-white block">Palace Protocols</span>
-              <p className="text-[11px]">Check-in: 2:00 PM</p>
-              <p className="text-[11px]">Check-out: 11:00 AM</p>
+              <p className="text-[11px]">Check-in: 2:00 PM · Check-out: 11:00 AM</p>
               <p className="text-[11px]">Sole wedding exclusivity guaranteed per date.</p>
             </div>
           </div>
